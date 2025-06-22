@@ -128,27 +128,10 @@ Made by Your Dhruv
 ###### Contributions, pull requests, and ideas are welcome!
 
 ### Problems:
-There are some problems when running in *[Termux](https://termux.dev/en/)*:
 
-- `fetchip` command doesn’t run directly after install  
-- You have to manually run it like: `~/.local/bin/fetchip`
-
+- If you Find One, Please let Us Notify!
 
 ### 🛠️ Solutions
 
-To fix command not found issues in Termux:
-1. Install jq manually if not install:
-   
-   ```pkg install jq```
-   
-1. *Add local bin to your PATH*
-   
-   Run this in Termux:
-   ```
-   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bash_profile
-   source ~/.bash_profile
-   ```
-3. Now you can run fetchip globally from anywhere:
-   ```
-   fetchip my -a -m
-   ```
+- If you can find one, you can solve one!🫣
+- Help Us Solve it🙂
