@@ -113,6 +113,8 @@ rm -f ~/.fetchip_history.log
 
 Remove any custom PATH entries from `~/.bashrc`, `~/.zshrc`, or shell config if added manually.
 
+
+
 ## 📄 License
 
 MIT License
@@ -123,3 +125,10 @@ Made by Your Dhruv
 - Copy Paster
 
 ###### Contributions, pull requests, and ideas are welcome!
+#### Problems:
+
+- There are some Problems when running in termux
+
+#### Solutions:
+
+- Help Me Solve Them ☺️
