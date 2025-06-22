@@ -30,7 +30,9 @@ Fetch Public IP Addresses of yours and other by Command line
 
 Run this in your terminal (Linux/macOS):
 
-`bash <(curl -s https://raw.githubusercontent.com/Sanatani-Dhruv/fetchip/main/install_fetchip.sh)`
+```
+bash <(curl -s https://raw.githubusercontent.com/Sanatani-Dhruv/fetchip/main/install_fetchip.sh)
+```
 
 🛠️ The script will install dependencies like jq automatically if not present.
 
