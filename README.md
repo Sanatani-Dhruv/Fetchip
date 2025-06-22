@@ -34,7 +34,7 @@ Run this in your terminal (Linux/macOS/Termux):
 bash <(curl -s https://raw.githubusercontent.com/Sanatani-Dhruv/fetchip/main/install_fetchip.sh)
 ```
 
-🛠️ The script will install dependencies like jq, curl if not present when running `fetchip` command.
+🛠️ The script will install dependencies like `jq`, `curl` if not present when running `fetchip` command.
 
 ---
 
@@ -124,10 +124,10 @@ MIT License
 
 ## 👨‍💻 Author
 Made by Your Dhruv
-- Not a Good Developer,
+- Not a Good Developer
 - Copy Paster
 
-###### Contributions, pull requests, and ideas are welcome!
+> Contributions, pull requests, and ideas are welcome!
 
 ### Problems:
 
