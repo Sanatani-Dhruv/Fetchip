@@ -1,15 +1,14 @@
-
 #!/bin/bash
 
 echo "🔧 Installing 'fetchip' CLI tool..."
 
-# Cleanup old
+# Cleanup old version
 rm -f ~/.local/bin/fetchip
 
 # Ensure ~/.local/bin exists
 mkdir -p ~/.local/bin
 
-# Write the script
+# Write fetchip script
 cat > ~/.local/bin/fetchip << 'EOL'
 #!/bin/bash
 
@@ -192,16 +191,22 @@ echo "❌ Unknown command. Try: fetchip -h"
 exit 1
 EOL
 
+# Make it executable
 chmod +x ~/.local/bin/fetchip
 
-# Add to PATH
-if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
-  echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-  echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+# Add to PATH safely if not already
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+  echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+  echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
   export PATH="$HOME/.local/bin:$PATH"
-  echo "📎 Added ~/.local/bin to PATH. Please restart terminal or run: source ~/.bashrc"
+  echo "📎 Added ~/.local/bin to PATH."
+
+  # Auto-source if interactive
+  if [[ $- == *i* ]]; then
+    [[ -f "$HOME/.bashrc" ]] && source "$HOME/.bashrc"
+    [[ -f "$HOME/.zshrc" ]] && source "$HOME/.zshrc"
+  fi
 fi
 
 echo "✅ 'fetchip' installed!"
-echo "👉 Try: fetchip my -a -m"
-
+echo "👉 You can now run: fetchip my -a -m"
