@@ -28,13 +28,13 @@ Fetch Public IP Addresses of yours and other by Command line
 
 ## 📦 Installation
 
-Run this in your terminal (Linux/macOS):
+Run this in your terminal (Linux/macOS/Termux):
 
 ```
 bash <(curl -s https://raw.githubusercontent.com/Sanatani-Dhruv/fetchip/main/install_fetchip.sh)
 ```
 
-🛠️ The script will install dependencies like jq automatically if not present when running `fetchip` command.
+🛠️ The script will install dependencies like jq, curl if not present when running `fetchip` command.
 (For Termux, go down.)
 
 ---
@@ -54,12 +54,15 @@ bash <(curl -s https://raw.githubusercontent.com/Sanatani-Dhruv/fetchip/main/ins
 - `fetchip history`	Show history of all lookups
 - `fetchip clear`	Clear lookup history (with confirmation prompt)
 - `fetchip -h / --help`	Show command reference
+- `fetchip update / -u / --update` Update this script
 
 
 
 ## 🌐 Multi-Source APIs Used
 When using the -m flag, fetchip will query multiple free public APIs:
 
+- [api.ipify.org](https://api.ipify.org)
+  
 - [ipinfo.io](https://ipinfo.io)
 
 - [ip-api.com](https://ip-api.com)
