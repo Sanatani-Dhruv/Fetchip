@@ -45,7 +45,7 @@ bash <(curl -s https://raw.githubusercontent.com/Sanatani-Dhruv/fetchip/main/ins
 #### Command	Description
 - `fetchip` Show your public IP (IPv4 or IPv6)
 - `fetchip my` Show both IPv4 and IPv6
-- `fetchip my -a` Show detailed info from ipinfo.io
+- `fetchip my -a` Show detailed info from [api.ipify.org](https://api.ipify.org) and [api6.ipify.org](https://api6.ipify.org)
 - `fetchip my -a -m`	Show info from multiple sources
 - `fetchip <ip>`	Just print the given IP
 - `fetchip <ip> -a`	Full info for that IP
