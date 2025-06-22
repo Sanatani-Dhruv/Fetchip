@@ -35,7 +35,6 @@ bash <(curl -s https://raw.githubusercontent.com/Sanatani-Dhruv/fetchip/main/ins
 ```
 
 🛠️ The script will install dependencies like jq, curl if not present when running `fetchip` command.
-(For Termux, go down.)
 
 ---
 
