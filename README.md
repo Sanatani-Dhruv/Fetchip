@@ -125,10 +125,25 @@ Made by Your Dhruv
 - Copy Paster
 
 ###### Contributions, pull requests, and ideas are welcome!
-#### Problems:
 
-- There are some Problems when running in termux
+### Problems:
+There are some problems when running in **Termux**:
 
-#### Solutions:
+- `fetchip` command doesn’t run directly after install  
+- You have to manually run it like: `~/.local/bin/fetchip`
 
-- Help Me Solve Them ☺️
+
+### 🛠️ Solutions
+
+To fix command not found issues in Termux:
+
+1. **Add local bin to your PATH**  
+   Run this in Termux:
+   ```
+   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bash_profile
+   source ~/.bash_profile
+   ```
+2. Now you can run fetchip globally from anywhere:
+   ```
+   fetchip my -a -m
+   ```
