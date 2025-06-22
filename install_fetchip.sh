@@ -39,6 +39,70 @@ cat > ~/.local/bin/fetchip << 'EOL'
 log_file="$HOME/.fetchip_history.log"
 timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 
+# Platform detection (silent)
+platform=""
+os_name="$(uname)"
+is_termux=false
+use_sudo="sudo"
+
+if [[ "$PREFIX" == *"com.termux"* ]] || grep -qi termux <<< "$HOME"; then
+  platform="Termux"
+  is_termux=true
+  use_sudo=""
+elif [[ "$os_name" == "Darwin" ]]; then
+  platform="macOS"
+elif [[ "$os_name" == "Linux" ]]; then
+  platform="Linux"
+else
+  platform="Unknown"
+fi
+
+check_command() {
+  local cmd="$1"
+
+  if command -v "$cmd" &>/dev/null; then
+    return 0
+  fi
+
+  echo "⚠️  '$cmd' is not installed. Detected platform: $platform"
+  read -p "Do you want to install '$cmd'? (y/n): " answer
+  if [[ "$answer" != "y" && "$answer" != "Y" ]]; then
+    echo "❌ '$cmd' is required. Exiting."
+    exit 1
+  fi
+
+  echo "Installing '$cmd'..."
+
+  if [[ "$platform" == "Termux" ]]; then
+    pkg install -y "$cmd"
+  elif [[ "$platform" == "Linux" ]]; then
+    if command -v apt &>/dev/null; then
+      $use_sudo apt update && $use_sudo apt install -y "$cmd"
+    elif command -v dnf &>/dev/null; then
+      $use_sudo dnf install -y "$cmd"
+    elif command -v pacman &>/dev/null; then
+      $use_sudo pacman -Sy --noconfirm "$cmd"
+    else
+      echo "❌ Unsupported Linux package manager. Please install '$cmd' manually."
+      exit 1
+    fi
+  elif [[ "$platform" == "macOS" ]]; then
+    if command -v brew &>/dev/null; then
+      brew install "$cmd"
+    else
+      echo "❌ Homebrew not found. Please install Homebrew first: https://brew.sh/"
+      exit 1
+    fi
+  else
+    echo "❌ Unknown platform. Please install '$cmd' manually."
+    exit 1
+  fi
+}
+
+# Check essential commands with prompt
+check_command curl
+check_command jq
+
 # Parse flags and args
 show_all=false
 multi=false
@@ -56,23 +120,6 @@ for arg in "$@"; do
     *) [[ -z "$target" && "$arg" != "-a" && "$arg" != "-m" ]] && target="$arg" ;;
   esac
 done
-
-# Ensure jq is installed
-if ! command -v jq &>/dev/null; then
-  echo "⚠️  'jq' is required but not installed."
-  echo "Choose your OS:"
-  echo "1. Linux (Debian/Ubuntu)"
-  echo "2. macOS"
-  read -p "Select 1 or 2: " choice
-  if [[ "$choice" == "1" ]]; then
-    sudo apt update && sudo apt install -y jq
-  elif [[ "$choice" == "2" ]]; then
-    brew install jq
-  else
-    echo "❌ Invalid choice."
-    exit 1
-  fi
-fi
 
 # Help
 if [[ "$show_help" == true ]]; then
@@ -95,7 +142,6 @@ if [[ "$show_help" == true ]]; then
   exit 0
 fi
 
-# Fetch from multiple APIs
 fetch_from_all_sources() {
   local ip="$1"
   echo "🔎 Multi-source info for IP: $ip"
@@ -114,14 +160,29 @@ fetch_from_all_sources() {
   curl -s "https://ipapi.co/$ip/json" | jq .
 }
 
+print_history_table() {
+  if [[ ! -s "$log_file" ]]; then
+    echo "ℹ️ No lookup history found."
+    return
+  fi
+
+  # Print header
+  printf "\n📜 Lookup History:\n"
+  printf "%-20s | %-39s | %-20s\n" "Timestamp" "IP Address" "Location / Org"
+  printf -- "---------------------+-----------------------------------------+----------------------\n"
+
+  while IFS='|' read -r ts ip locorg; do
+    ts_trimmed=$(echo "$ts" | xargs)
+    ip_trimmed=$(echo "$ip" | xargs)
+    locorg_trimmed=$(echo "$locorg" | xargs)
+    printf "%-20s | %-39s | %-20s\n" "$ts_trimmed" "$ip_trimmed" "$locorg_trimmed"
+  done < "$log_file"
+  echo ""
+}
+
 # Show history
 if [[ "$target" == "history" ]]; then
-  if [[ -s "$log_file" ]]; then
-    echo "📜 Lookup History:"
-    cat "$log_file"
-  else
-    echo "ℹ️ No lookup history found."
-  fi
+  print_history_table
   exit 0
 fi
 
@@ -136,15 +197,15 @@ if [[ "$target" == "clear" ]]; then
       echo "❌ Cancelled. History not cleared."
     fi
   else
-    echo "ℹ️ No history file exists."
+    echo "📜 No history file exists."
   fi
   exit 0
 fi
 
 # fetchip my -a -m
 if [[ "$target" == "my" && "$show_all" == true ]]; then
-  ipv4=$(curl -s -4 https://ipecho.net/plain)
-  ipv6=$(curl -s -6 https://ipecho.net/plain)
+  ipv4=$(curl -s https://api.ipify.org)
+  ipv6=$(curl -s https://api6.ipify.org)
 
   if [[ "$multi" == true ]]; then
     [[ -n "$ipv4" ]] && { echo -e "\n🔍 IPv4 ($ipv4):"; fetch_from_all_sources "$ipv4"; }
@@ -175,8 +236,8 @@ fi
 # fetchip my (no -a)
 if [[ "$target" == "my" ]]; then
   echo "🌐 Your Public IPs:"
-  echo "IPv4: $(curl -s -4 https://ipecho.net/plain)"
-  echo "IPv6: $(curl -s -6 https://ipecho.net/plain)"
+  echo "IPv4: $(curl -s https://api.ipify.org)"
+  echo "IPv6: $(curl -s https://api6.ipify.org)"
   exit 0
 fi
 
@@ -206,7 +267,7 @@ fi
 
 # fetchip (no args)
 if [[ -z "$target" ]]; then
-  echo "$(curl -s https://ipecho.net/plain)"
+  echo "$(curl -s https://api.ipify.org)"
   exit 0
 fi
 
