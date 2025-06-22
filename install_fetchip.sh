@@ -1,27 +1,3 @@
-: '
-MIT License
-
-Copyright (c) 2025 Sanatani-Dhruv
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-'
-
 #!/bin/bash
 
 echo "🔧 Installing 'fetchip' CLI tool..."
@@ -39,70 +15,6 @@ cat > ~/.local/bin/fetchip << 'EOL'
 log_file="$HOME/.fetchip_history.log"
 timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 
-# Platform detection (silent)
-platform=""
-os_name="$(uname)"
-is_termux=false
-use_sudo="sudo"
-
-if [[ "$PREFIX" == *"com.termux"* ]] || grep -qi termux <<< "$HOME"; then
-  platform="Termux"
-  is_termux=true
-  use_sudo=""
-elif [[ "$os_name" == "Darwin" ]]; then
-  platform="macOS"
-elif [[ "$os_name" == "Linux" ]]; then
-  platform="Linux"
-else
-  platform="Unknown"
-fi
-
-check_command() {
-  local cmd="$1"
-
-  if command -v "$cmd" &>/dev/null; then
-    return 0
-  fi
-
-  echo "⚠️  '$cmd' is not installed. Detected platform: $platform"
-  read -p "Do you want to install '$cmd'? (y/n): " answer
-  if [[ "$answer" != "y" && "$answer" != "Y" ]]; then
-    echo "❌ '$cmd' is required. Exiting."
-    exit 1
-  fi
-
-  echo "Installing '$cmd'..."
-
-  if [[ "$platform" == "Termux" ]]; then
-    pkg install -y "$cmd"
-  elif [[ "$platform" == "Linux" ]]; then
-    if command -v apt &>/dev/null; then
-      $use_sudo apt update && $use_sudo apt install -y "$cmd"
-    elif command -v dnf &>/dev/null; then
-      $use_sudo dnf install -y "$cmd"
-    elif command -v pacman &>/dev/null; then
-      $use_sudo pacman -Sy --noconfirm "$cmd"
-    else
-      echo "❌ Unsupported Linux package manager. Please install '$cmd' manually."
-      exit 1
-    fi
-  elif [[ "$platform" == "macOS" ]]; then
-    if command -v brew &>/dev/null; then
-      brew install "$cmd"
-    else
-      echo "❌ Homebrew not found. Please install Homebrew first: https://brew.sh/"
-      exit 1
-    fi
-  else
-    echo "❌ Unknown platform. Please install '$cmd' manually."
-    exit 1
-  fi
-}
-
-# Check essential commands with prompt
-check_command curl
-check_command jq
-
 # Parse flags and args
 show_all=false
 multi=false
@@ -117,13 +29,62 @@ for arg in "$@"; do
     -h|--help) show_help=true ;;
     history) target="history" ;;
     clear) target="clear" ;;
+    update|-u|--update) target="update" ;;
     *) [[ -z "$target" && "$arg" != "-a" && "$arg" != "-m" ]] && target="$arg" ;;
   esac
 done
 
+# Function to detect platform
+detect_platform() {
+  if [[ -n "$PREFIX" && "$PREFIX" == *"/data/data"* ]]; then
+    echo "termux"
+  elif [[ "$(uname)" == "Darwin" ]]; then
+    echo "macos"
+  else
+    echo "linux"
+  fi
+}
+
+platform=$(detect_platform)
+
+# Check and prompt for required commands
+check_and_install() {
+  local cmd=$1
+  local pkg=$2
+
+  if ! command -v "$cmd" &>/dev/null; then
+    echo "⚠️ $cmd is required but not installed."
+    read -p "Do you want to install $cmd? (y/n): " confirm
+    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+      echo "❌ $cmd is required. Exiting."
+      exit 1
+    fi
+    if [[ "$platform" == "linux" ]]; then
+      sudo apt update && sudo apt install -y "$pkg"
+    elif [[ "$platform" == "macos" ]]; then
+      brew install "$pkg"
+    elif [[ "$platform" == "termux" ]]; then
+      pkg install -y "$pkg"
+    else
+      echo "❌ Unsupported platform for automatic install."
+      exit 1
+    fi
+  fi
+}
+
+check_and_install curl curl
+check_and_install jq jq
+
+# Update command
+if [[ "$target" == "update" ]]; then
+  echo "🔄 Updating fetchip..."
+  bash <(curl -s https://raw.githubusercontent.com/Sanatani-Dhruv/fetchip/main/install_fetchip.sh)
+  exit 0
+fi
+
 # Help
 if [[ "$show_help" == true ]]; then
-  echo "📘 Usage: fetchip [my|<IP>|history|clear] [-a] [-m]"
+  echo "📘 Usage: fetchip [my|<IP>|history|clear|update] [-a] [-m]"
   echo ""
   echo "COMMANDS:"
   echo "  fetchip                  Show your current public IP"
@@ -135,6 +96,7 @@ if [[ "$show_help" == true ]]; then
   echo "  fetchip <ip> -a -m       Show info from multiple APIs"
   echo "  fetchip history          Show IP lookup history"
   echo "  fetchip clear            Clear history (asks for confirmation)"
+  echo "  fetchip update (-u)      Update this script"
   echo ""
   echo "OPTIONS:"
   echo "  -a    Show full details"
@@ -142,6 +104,7 @@ if [[ "$show_help" == true ]]; then
   exit 0
 fi
 
+# Fetch from multiple APIs
 fetch_from_all_sources() {
   local ip="$1"
   echo "🔎 Multi-source info for IP: $ip"
@@ -160,29 +123,15 @@ fetch_from_all_sources() {
   curl -s "https://ipapi.co/$ip/json" | jq .
 }
 
-print_history_table() {
-  if [[ ! -s "$log_file" ]]; then
-    echo "ℹ️ No lookup history found."
-    return
-  fi
-
-  # Print header
-  printf "\n📜 Lookup History:\n"
-  printf "%-20s | %-39s | %-20s\n" "Timestamp" "IP Address" "Location / Org"
-  printf -- "---------------------+-----------------------------------------+----------------------\n"
-
-  while IFS='|' read -r ts ip locorg; do
-    ts_trimmed=$(echo "$ts" | xargs)
-    ip_trimmed=$(echo "$ip" | xargs)
-    locorg_trimmed=$(echo "$locorg" | xargs)
-    printf "%-20s | %-39s | %-20s\n" "$ts_trimmed" "$ip_trimmed" "$locorg_trimmed"
-  done < "$log_file"
-  echo ""
-}
-
-# Show history
+# Show history (formatted table)
 if [[ "$target" == "history" ]]; then
-  print_history_table
+  if [[ -s "$log_file" ]]; then
+    echo -e "Timestamp\t\t\tIP Address\tLocation\t\tOrganization"
+    echo "-------------------------------------------------------------------------------"
+    column -t -s '|' <(sed 's/|/\t/g' "$log_file")
+  else
+    echo "ℹ️ No lookup history found."
+  fi
   exit 0
 fi
 
@@ -197,7 +146,7 @@ if [[ "$target" == "clear" ]]; then
       echo "❌ Cancelled. History not cleared."
     fi
   else
-    echo "📜 No history file exists."
+    echo "ℹ️ No history file exists."
   fi
   exit 0
 fi
@@ -235,9 +184,11 @@ fi
 
 # fetchip my (no -a)
 if [[ "$target" == "my" ]]; then
+  ipv4=$(curl -s https://api.ipify.org)
+  ipv6=$(curl -s https://api6.ipify.org)
   echo "🌐 Your Public IPs:"
-  echo "IPv4: $(curl -s https://api.ipify.org)"
-  echo "IPv6: $(curl -s https://api6.ipify.org)"
+  echo "IPv4: $ipv4"
+  echo "IPv6: $ipv6"
   exit 0
 fi
 
@@ -267,7 +218,8 @@ fi
 
 # fetchip (no args)
 if [[ -z "$target" ]]; then
-  echo "$(curl -s https://api.ipify.org)"
+  ipv4=$(curl -s https://api.ipify.org)
+  echo "$ipv4"
   exit 0
 fi
 
