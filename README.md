@@ -1,4 +1,3 @@
-
 # 🛰️ fetchip
 Fetch Public IP Addresses of yours and other by Command line
 
@@ -12,8 +11,6 @@ Fetch Public IP Addresses of yours and other by Command line
 - Lookup history logging
 - Clean table-style history output
 
----
-
 ## 🚀 Features
 
 - ✅ Fetch your public IPv4/IPv6  
@@ -24,23 +21,97 @@ Fetch Public IP Addresses of yours and other by Command line
 - ✅ Simple CLI: `fetchip` from anywhere  
 - ✅ Compatible with Linux & macOS  
 
----
 
 ## 📦 Installation
 
-Run this in your terminal (Linux/macOS/Termux):
+### 1. Dependencies:
+
+- Make Sure dependencies like `curl` and `jq` are pre-installed
+
+- Check if they are installed by command : 
+	```
+	curl --version
+	```
+	
+	```
+	jq --version
+	```
+	
+- If it shows something like 
+	```
+	Command 'jq' not found....
+	Command 'curl' not found....
+	```
+
+- Install them depending on your OS :
+
+	> For Ubuntu / Debian / Kali / Pop!_OS / Linux Mint (APT-based distributions)	
+	
+	```
+	sudo apt update && sudo apt install jq curl -y
+	
+	```
+	
+	> Arch Linux / Manjaro / EndeavourOS (Pacman-based distributions)
+
+	```
+	sudo pacman -Sy jq curl --noconfirm
+	```
+	
+	> macOS (using Homebrew)
+	
+	```
+	brew update && brew install jq curl
+	```
+	
+	> Termux (Android terminal emulator)
+	
+	```
+	pkg update && pkg install jq curl -y
+	```
+	
+	> Fedora / RHEL / CentOS / Rocky / AlmaLinux (DNF-based distributions)
+	
+	```
+	sudo dnf install jq curl -y
+	```
+	
+	> openSUSE / SUSE Linux Enterprise (Zypper-based distributions)
+	
+	```
+	sudo zypper refresh && sudo zypper install jq curl -y
+	```
+	
+	> Gentoo Linux
+	
+	```
+	sudo emerge --ask app-misc/jq net-misc/curl
+	```
+	
+	> Alpine Linux
+	
+	```
+	apk update && apk add jq curl
+	```
+
+
+- Run this in your terminal (Linux/macOS/Termux):
+
 
 ```
 bash <(curl -s https://raw.githubusercontent.com/Sanatani-Dhruv/fetchip/main/install_fetchip.sh)
 ```
 
+
+
 🛠️ The script will install dependencies like `jq`, `curl` if not present when running `fetchip` command.
 
----
 
 ## 💻 Usage
 
-`fetchip [my|<IP>] [-a] [-m]`
+```
+fetchip [my|<IP>] [-a] [-m]
+```
 
 #### Command	Description
 - `fetchip` Show your public IP (IPv4 or IPv6)
@@ -72,7 +143,6 @@ When using the -m flag, fetchip will query multiple free public APIs:
 
 This ensures more accurate and redundant location results.
 
----
 
 ## 📜 History Log
 
@@ -87,10 +157,10 @@ All lookups done with `-a` are logged in a local file:
 ## Example output:
 
 
-####📜 Lookup History:
+#### 📜 Lookup History:
 
 ```
-Date & Time         IP Address     Location              Organization
+Date & Time         IP Address     Location                Organization
 ------------------  -------------  ---------------------  ------------------
 2025-06-22 14:12:45 8.8.8.8        Mountain View, US      Google LLC
 2025-06-22 14:13:10 1.1.1.1        Sydney, AU             Cloudflare
@@ -109,8 +179,7 @@ To remove the tool:
 
 
 ```
-rm -f ~/.local/bin/fetchip
-rm -f ~/.fetchip_history.log
+rm -f ~/.local/bin/fetchip && rm -f ~/.fetchip_history.log
 ```
 
 
@@ -123,17 +192,16 @@ Remove any custom PATH entries from `~/.bashrc`, `~/.zshrc`, or shell config if 
 MIT License
 
 ## 👨‍💻 Author
-Made by Your Dhruv
+- Made by Your Dhruv
 - Not a Good Developer
-- Copy Paster
 
 > Contributions, pull requests, and ideas are welcome!
 
 ### Problems:
 
-- If you Find One, Please let Us Notify!
+- If you find one, report it via GitHub issues
 
 ### 🛠️ Solutions
 
-- If you can find one, you can solve one!🫣
-- Help Us Solve it🙂
+- If you can find one, you can solve one!
+- Send a fix! 💪🙂
