@@ -26,9 +26,14 @@ Fetch Public IP Addresses of yours and other by Command line
 
 ### 1. Dependencies:
 
-- Make Sure dependencies like `curl` and `jq` are pre-installed
+- Make Sure dependencies like  `bash`, `curl` and `jq` are pre-installed
 
-- Check if they are installed by command : 
+- Check if they are installed by command :
+  
+  	```
+	bash --version
+	```
+   
 	```
 	curl --version
 	```
@@ -39,8 +44,9 @@ Fetch Public IP Addresses of yours and other by Command line
 	
 - If it shows something like 
 	```
+ 	Command 'bash' not found....
+ 	Command 'curl' not found....
 	Command 'jq' not found....
-	Command 'curl' not found....
 	```
 
 - Install them depending on your OS :
@@ -49,62 +55,83 @@ Fetch Public IP Addresses of yours and other by Command line
 	
 	```
 	sudo apt update && sudo apt install jq curl -y
-	
 	```
+ 	---
 	
 	> Arch Linux / Manjaro / EndeavourOS (Pacman-based distributions)
 
 	```
 	sudo pacman -Sy jq curl --noconfirm
 	```
+ 	---
 	
 	> macOS (using Homebrew)
 	
 	```
 	brew update && brew install jq curl
 	```
+	 ---
 	
 	> Termux (Android terminal emulator)
 	
 	```
 	pkg update && pkg install jq curl -y
 	```
-	
+
+ 	---
 	> Fedora / RHEL / CentOS / Rocky / AlmaLinux (DNF-based distributions)
 	
 	```
 	sudo dnf install jq curl -y
 	```
+	 ---
 	
 	> openSUSE / SUSE Linux Enterprise (Zypper-based distributions)
 	
 	```
 	sudo zypper refresh && sudo zypper install jq curl -y
 	```
-	
+
+	 ---
 	> Gentoo Linux
 	
 	```
 	sudo emerge --ask app-misc/jq net-misc/curl
 	```
-	
+ 	---
 	> Alpine Linux
 	
 	```
-	apk update && apk add jq curl
+	apk update && apk add bash jq curl
 	```
+	> Note: only Alpine Linux's command has `bash` included.
 
+### 2. Main installation
 
-- Run this in your terminal (Linux/macOS/Termux):
-
+Run this in your terminal (Linux/macOS/Termux):
 
 ```
 bash <(curl -s https://raw.githubusercontent.com/Sanatani-Dhruv/fetchip/main/install_fetchip.sh)
 ```
 
 
+🛠️ The script will install dependencies like `curl`,`jq` if not present when running `fetchip` command.
+(It will make sure if they are available or not.)
 
-🛠️ The script will install dependencies like `jq`, `curl` if not present when running `fetchip` command.
+> Note: If the fetchip command doesn't work immediately after installation, your shell might not have reloaded the updated PATH. To fix it, run:
+
+```
+source ~/.bashrc
+```
+
+Or if you use Zsh:
+
+```
+source ~/.zshrc
+```
+
+This reloads your shell configuration so the `fetchip` command becomes available
+
 
 
 ## 💻 Usage
