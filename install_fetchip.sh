@@ -30,6 +30,7 @@ for arg in "$@"; do
     history) target="history" ;;
     clear) target="clear" ;;
     update|-u|--update) target="update" ;;
+    uninstall) target="uninstall" ;;
     *) [[ -z "$target" && "$arg" != "-a" && "$arg" != "-m" ]] && target="$arg" ;;
   esac
 done
@@ -82,9 +83,42 @@ if [[ "$target" == "update" ]]; then
   exit 0
 fi
 
+# Uninstall command
+if [[ "$target" == "uninstall" ]]; then
+  remove_all=false
+  auto_yes=false
+
+  for arg in "$@"; do
+    [[ "$arg" == "-e" ]] && remove_all=true
+    [[ "$arg" == "-y" ]] && auto_yes=true
+  done
+
+  echo "⚠️ This will uninstall 'fetchip'."
+  [[ "$remove_all" == true ]] && echo "📛 Also set to remove history file."
+
+  if [[ "$auto_yes" != true ]]; then
+    read -p "Are you sure? (y/n): " confirm
+    [[ "$confirm" != "y" && "$confirm" != "Y" ]] && {
+      echo "❌ Uninstall cancelled."
+      exit 0
+    }
+  fi
+
+  rm -f ~/.local/bin/fetchip
+  echo "🗑️ Removed fetchip CLI from ~/.local/bin"
+
+  if [[ "$remove_all" == true ]]; then
+    rm -f "$log_file"
+    echo "🗑️ Removed history log: $log_file"
+  fi
+
+  echo "✅ Uninstall complete."
+  exit 0
+fi
+
 # Help
 if [[ "$show_help" == true ]]; then
-  echo "📘 Usage: fetchip [my|<IP>|history|clear|update] [-a] [-m]"
+  echo "📘 Usage: fetchip [my|<IP>|history|clear|update|uninstall] [-a] [-m]"
   echo ""
   echo "COMMANDS:"
   echo "  fetchip                  Show your current public IP"
@@ -97,6 +131,8 @@ if [[ "$show_help" == true ]]; then
   echo "  fetchip history          Show IP lookup history"
   echo "  fetchip clear            Clear history (asks for confirmation)"
   echo "  fetchip update (-u)      Update this script"
+  echo "  fetchip uninstall [-e]   Uninstall tool. Use -e to also remove history"
+  echo "                           Use -y to skip confirmation"
   echo ""
   echo "OPTIONS:"
   echo "  -a    Show full details"
@@ -123,7 +159,7 @@ fetch_from_all_sources() {
   curl -s "https://ipapi.co/$ip/json" | jq .
 }
 
-# Show history (formatted table)
+# Show history
 if [[ "$target" == "history" ]]; then
   if [[ -s "$log_file" ]]; then
     echo -e "Timestamp\t\t\tIP Address\tLocation\t\tOrganization"
@@ -246,4 +282,4 @@ if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
 fi
 
 echo "✅ 'fetchip' installed!"
-echo "👉 You can now run: fetchip my -a -m"
+echo "👉 Run: fetchip my -a -m"
