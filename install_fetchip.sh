@@ -35,46 +35,88 @@ for arg in "$@"; do
   esac
 done
 
-# Function to detect platform
+# Detect platform for package management
 detect_platform() {
   if [[ -n "$PREFIX" && "$PREFIX" == *"/data/data"* ]]; then
     echo "termux"
   elif [[ "$(uname)" == "Darwin" ]]; then
     echo "macos"
+  elif [[ -f /etc/alpine-release ]]; then
+    echo "alpine"
+  elif [[ -f /etc/debian_version ]]; then
+    echo "debian"
+  elif [[ -f /etc/arch-release ]]; then
+    echo "arch"
+  elif [[ -f /etc/fedora-release ]]; then
+    echo "fedora"
+  elif [[ -f /etc/void-release ]]; then
+    echo "void"
+  elif [[ -f /etc/redhat-release ]]; then
+    echo "rhel"
+  elif command -v nix-env >/dev/null 2>&1; then
+    echo "nixos"
+  elif [[ "$(uname)" == "FreeBSD" ]]; then
+    echo "freebsd"
   else
-    echo "linux"
+    echo "unknown"
   fi
 }
 
-platform=$(detect_platform)
-
-# Check and prompt for required commands
-check_and_install() {
+# Install package if not found
+install_package() {
   local cmd=$1
   local pkg=$2
+  local platform=$(detect_platform)
 
-  if ! command -v "$cmd" &>/dev/null; then
-    echo "⚠️ $cmd is required but not installed."
-    read -p "Do you want to install $cmd? (y/n): " confirm
-    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-      echo "❌ $cmd is required. Exiting."
-      exit 1
-    fi
-    if [[ "$platform" == "linux" ]]; then
-      sudo apt update && sudo apt install -y "$pkg"
-    elif [[ "$platform" == "macos" ]]; then
-      brew install "$pkg"
-    elif [[ "$platform" == "termux" ]]; then
-      pkg install -y "$pkg"
-    else
-      echo "❌ Unsupported platform for automatic install."
-      exit 1
-    fi
+  if command -v "$cmd" &>/dev/null; then
+    return 0
   fi
+
+  echo "⚠️ '$cmd' is required but not installed. Attempting installation..."
+
+  case "$platform" in
+    alpine)
+      apk add --no-cache "$pkg"
+      ;;
+    debian)
+      if command -v sudo &>/dev/null; then
+        sudo apt update && sudo apt install -y "$pkg"
+      else
+        apt update && apt install -y "$pkg"
+      fi
+      ;;
+    arch)
+      sudo pacman -Sy --noconfirm "$pkg"
+      ;;
+    fedora|rhel)
+      sudo dnf install -y "$pkg" || sudo yum install -y "$pkg"
+      ;;
+    void)
+      sudo xbps-install -Sy "$pkg"
+      ;;
+    termux)
+      pkg install -y "$pkg"
+      ;;
+    macos)
+      brew install "$pkg"
+      ;;
+    nixos)
+      echo "⚠️ Detected NixOS. Please run manually: nix-env -iA nixpkgs.$pkg"
+      exit 1
+      ;;
+    freebsd)
+      sudo pkg install -y "$pkg"
+      ;;
+    *)
+      echo "❌ Unknown platform. Please install '$pkg' manually."
+      exit 1
+      ;;
+  esac
 }
 
-check_and_install curl curl
-check_and_install jq jq
+install_package curl curl
+install_package jq jq
+
 
 # Update command
 if [[ "$target" == "update" ]]; then
