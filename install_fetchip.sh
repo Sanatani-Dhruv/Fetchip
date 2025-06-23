@@ -232,7 +232,7 @@ fi
 # fetchip my -a -m
 if [[ "$target" == "my" && "$show_all" == true ]]; then
   ipv4=$(curl -s https://api.ipify.org)
-  ipv6=$(curl -s https://api6.ipify.org)
+  ipv6=$(curl -s --max-time 2 https://api6.ipify.org || echo "No public IPv6 found or network blocked it.")
 
   if [[ "$multi" == true ]]; then
     [[ -n "$ipv4" ]] && { echo -e "\n🔍 IPv4 ($ipv4):"; fetch_from_all_sources "$ipv4"; }
@@ -263,7 +263,7 @@ fi
 # fetchip my (no -a)
 if [[ "$target" == "my" ]]; then
   ipv4=$(curl -s https://api.ipify.org)
-  ipv6=$(curl -s https://api6.ipify.org)
+  ipv6=$(curl -s --max-time 2 https://api6.ipify.org || echo "No public IPv6 found or network blocked it.")
   echo "🌐 Your Public IPs:"
   echo "IPv4: $ipv4"
   echo "IPv6: $ipv6"
