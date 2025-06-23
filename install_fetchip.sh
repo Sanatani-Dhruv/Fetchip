@@ -289,3 +289,7 @@ fi
 
 echo "✅ 'fetchip' installed!"
 echo "👉 Run: fetchip my -a -m"
+echo "🔁 If fetchip is not found in new terminals, run: "
+echo "source ~/.bashrc "
+echo "or"
+echo "source ~/.zshrc"
