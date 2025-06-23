@@ -269,8 +269,14 @@ chmod +x ~/.local/bin/fetchip
 
 # Add to PATH safely if not already
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+  if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null; then
   echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+fi
+
+if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.zshrc" 2>/dev/null; then
   echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
+fi
+
   export PATH="$HOME/.local/bin:$PATH"
   echo "📎 Added ~/.local/bin to PATH."
 
